@@ -11,6 +11,7 @@ The simulator guides students through a sequential financial case. Teams select 
 The simulator emphasizes the practical use of financial indicators in uncertain innovation contexts. Rather than asking students to mechanically calculate every indicator, the tool combines guided numerical exercises with interpretive questions that require students to connect financial results with market adoption, cost structure, financing, scalability, operational risk, and managerial action.
 
 The simulator runs entirely as a single self-contained HTML file — no backend, no installation, and no external dependencies are required beyond a modern web browser. It can be opened locally, shared through a learning management system, hosted on a web server, or published using static hosting services such as GitHub Pages.
+
 ---
 ## Learning Objectives
 By completing the simulation, students are able to:
