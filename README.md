@@ -1,7 +1,6 @@
 # DecisionVenture2
 > **Interactive financial viability simulator for evaluating innovation projects through guided calculations, financial indicators, and managerial decision-making.**
-> Developed for the **Viabilidad de la Innovación** course by **Julián Díaz Tautiva, PhD**
-
+> Developed for the Managerial Economics course by Julián Díaz Tautiva, PhD
 ---
 ## Overview
 **DecisionVenture2** is a browser-based pedagogical simulation tool designed for undergraduate and graduate courses on innovation viability, entrepreneurship, project evaluation, and applied finance. Students work in teams and take the role of decision-makers evaluating whether an innovation project should be accepted, rejected, or conditionally advanced.
