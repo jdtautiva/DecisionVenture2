@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Viabilidad Financiera para proyectos de Innovación</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    line-height: 1.6;
+  }
+  h1, h2, h3, h4, button, .btn, .card-title, label { font-family: Arial, Helvetica, sans-serif; }
+  .container { max-width: 1020px; margin: 0 auto; padding: 24px 16px; }
+  .site-header { background: #1a1a2e; color: #fff; padding: 22px 0; }
+  .site-header h1 { text-align: center; font-size: 1.45rem; }
+  .site-header p { text-align: center; font-size: 0.9rem; color: #b0b8d1; margin-top: 4px; }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+    padding: 26px;
+    margin-bottom: 22px;
+  }
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    border-bottom: 2px solid #e8eaf0;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+  .subtle { color: #626b7a; font-size: 0.9rem; }
+  .muted { color:#697386; }
+  .hidden { display: none !important; }
+  .case-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+  .case-card { border: 2px solid #e0e4ef; border-radius: 9px; padding: 18px; cursor: pointer; background: #fafbff; transition: 0.2s; }
+  .case-card:hover { border-color: #3a5fc8; box-shadow: 0 4px 12px rgba(58,95,200,0.12); }
+  .case-card.selected { border-color: #3a5fc8; background: #eef2fd; }
+  .case-card h3 { font-size: 0.95rem; margin-bottom: 6px; color: #1a1a2e; }
+  .case-card p { font-size: 0.84rem; color: #606a7b; }
+  .case-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; margin-bottom: 8px; }
+  .badge-digital { background: #dbeafe; color: #1d4ed8; }
+  .badge-iot { background: #d1fae5; color: #065f46; }
+  .badge-sustain { background: #fef3c7; color: #92400e; }
+  .badge-health { background: #ede9fe; color: #5b21b6; }
+  .badge-agro { background: #dcfce7; color: #166534; }
+  .badge-circular { background: #cffafe; color: #155e75; }
+
+  label { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 4px; color: #333; }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #d0d5e8;
+    border-radius: 7px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #fafbff;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #3a5fc8; background:#fff; }
+  textarea { resize: vertical; min-height: 100px; }
+  .form-group { margin-bottom: 16px; }
+  .form-hint { font-size: 0.78rem; color: #777; margin-top: 4px; }
+
+  .btn {
+    display: inline-block;
+    padding: 11px 22px;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: #3a5fc8; color: #fff; }
+  .btn-primary:hover { background: #2d4faa; }
+  .btn-secondary { background: #6c757d; color: #fff; }
+  .btn-secondary:hover { background: #5a6268; }
+  .btn-success { background: #198754; color: #fff; }
+  .btn-success:hover { background: #146c43; }
+  .btn-warning { background: #d97706; color:#fff; }
+  .btn-warning:hover { background: #b45309; }
+  .btn-outline { background: transparent; border: 2px solid #3a5fc8; color: #3a5fc8; }
+  .btn-outline:hover { background: #eef2fd; }
+  .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+
+  .alert { padding: 13px 16px; border-radius: 7px; font-size: 0.9rem; margin-bottom: 16px; }
+  .alert-info { background: #dbeafe; border-left: 4px solid #3b82f6; color: #1e40af; }
+  .alert-warning { background: #fef3c7; border-left: 4px solid #d97706; color: #854d0e; }
+  .alert-error { background: #fee2e2; border-left: 4px solid #dc2626; color: #991b1b; }
+  .alert-success { background: #d1fae5; border-left: 4px solid #059669; color: #065f46; }
+
+  .progress-wrap { background:#eef2fd; border-radius: 999px; height: 14px; overflow:hidden; margin: 10px 0 8px; }
+  .progress-bar { height: 100%; width:0%; background:#3a5fc8; transition: width 0.3s; }
+  .step-meta { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-size:0.84rem; color:#596476; }
+  .step-title { font-size:1.15rem; color:#1a1a2e; margin: 8px 0 4px; }
+  .question-number {
+    display: inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 32px; height: 32px;
+    background: #3a5fc8; color: #fff;
+    border-radius: 50%; font-size: 0.86rem; font-weight: 700; margin-right: 8px;
+  }
+
+  .guide-grid { display:grid; grid-template-columns: 1.1fr 0.9fr; gap:16px; margin:16px 0; }
+  @media (max-width: 760px) { .guide-grid { grid-template-columns:1fr; } }
+  .guide-box, .business-box {
+    border-radius: 9px;
+    padding: 16px;
+  }
+  .guide-box { background:#f0f4ff; border:1px solid #c7d2f7; }
+  .business-box { background:#fff9e6; border:1px solid #fde68a; }
+  .guide-box h4, .business-box h4 { font-size:0.95rem; margin-bottom:10px; color:#1a1a2e; }
+  .guide-box ol, .guide-box ul, .business-box ul { padding-left:20px; }
+  .guide-box li, .business-box li { font-size:0.86rem; margin-bottom:6px; color:#414b5d; }
+  .formula {
+    display:block;
+    font-family: "Courier New", monospace;
+    background:#fff;
+    border:1px solid #c7d2f7;
+    padding:8px 10px;
+    border-radius:6px;
+    margin:10px 0;
+    color:#1a1a2e;
+    overflow-x:auto;
+    font-size:0.86rem;
+  }
+
+  .table-scroll { overflow-x:auto; }
+  table { width:100%; border-collapse: collapse; font-size:0.88rem; }
+  th { background:#1a1a2e; color:#fff; padding:9px 12px; text-align:center; font-size:0.82rem; }
+  td { padding:8px 12px; border-bottom:1px solid #e8eaf0; text-align:right; }
+  td:first-child { text-align:left; font-weight:600; color:#333; }
+  tr.total-row td { background:#eef2fd; font-weight:700; border-top:2px solid #3a5fc8; }
+  .summary-list { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:10px; }
+  .summary-item { border-radius:7px; padding:10px 12px; font-size:0.86rem; }
+  .correct { background:#d1fae5; border-left:4px solid #059669; }
+  .partial { background:#fef3c7; border-left:4px solid #d97706; }
+  .wrong { background:#fee2e2; border-left:4px solid #dc2626; }
+  .pending { background:#eef2fd; border-left:4px solid #3a5fc8; }
+  .score-box { text-align:center; padding:25px; background:#1a1a2e; border-radius:9px; color:#fff; }
+  .score-number { font-size:3rem; font-weight:800; }
+  .score-label { color:#b0b8d1; font-size:0.9rem; }
+
+
+
+  .metric-panel {
+    background: #eef2fd;
+    border: 1px solid #c7d2f7;
+    border-left: 5px solid #3a5fc8;
+    border-radius: 9px;
+    padding: 14px 16px;
+    margin: 12px 0 16px;
+  }
+  .metric-panel h4 { margin-bottom: 10px; font-size: 0.94rem; color:#1a1a2e; }
+  .metric-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .metric-card { background:#fff; border:1px solid #d6def8; border-radius:8px; padding:10px 12px; }
+  .metric-card .metric-label { display:block; color:#5b6575; font-size:0.75rem; font-family: Arial, Helvetica, sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+  .metric-card .metric-value { display:block; color:#1a1a2e; font-size:1.05rem; font-weight:800; margin-top:2px; }
+  .prompt-box {
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:9px;
+    padding:12px 14px;
+    margin-bottom:12px;
+    color:#334155;
+    font-size:.91rem;
+  }
+
+
+  .team-member-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .team-member-row input { flex:1; }
+  .btn-small { padding: 8px 12px; font-size:0.82rem; }
+  .report-table { width:100%; border-collapse: collapse; font-size:0.84rem; }
+  .report-table th { background:#1a1a2e; color:#fff; padding:8px; text-align:left; }
+  .report-table td { padding:8px; border-bottom:1px solid #e8eaf0; text-align:left; vertical-align:top; }
+  .report-table td.points { text-align:center; white-space:nowrap; font-weight:700; }
+  .answer-text { white-space:pre-wrap; color:#334155; }
+
+  @media print {
+    .btn-group, .site-header, #welcome-screen, #question-card { display:none !important; }
+    body { background:#fff; }
+    .container { max-width:100%; padding:0; }
+    .card { box-shadow:none; border:1px solid #ddd; page-break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="container">
+    <h1>Simulador de Viabilidad Financiera para proyectos de Innovación</h1>
+    <p style="font-size:0.86rem; color:#e5e7eb; margin-top:6px; letter-spacing:0.2px">Simulador hecho por Julián Díaz Tautiva, PhD</p>
+  </div>
+</div>
+
+<div id="welcome-screen" class="container">
+  <div class="card" style="margin-top:24px">
+    <div class="card-title">Inicio del simulador</div>
+    <p class="subtle">
+      Selecciona uno de los seis casos. El simulador mostrará una pregunta a la vez. Cada respuesta debe ser validada antes de avanzar,
+      como en un caso financiero concatenado: primero se calcula el costo de deuda, luego el WACC, después los flujos,
+      y finalmente se interpretan VAN, TIR, payback, sensibilidad y riesgos para justificar la decisión.
+    </p>
+
+    <div class="form-group" style="margin-top:18px; max-width:620px">
+      <label>Integrantes del equipo</label>
+      <div id="team-members">
+        <div class="team-member-row">
+          <input type="text" class="member-input" placeholder="Nombre del integrante 1">
+        </div>
+      </div>
+      <button type="button" class="btn btn-outline btn-small" onclick="addMemberField()">+ Agregar integrante</button>
+      <div class="form-hint">Agrega todos los nombres del equipo antes de comenzar la simulación.</div>
+    </div>
+
+    <h3 style="font-size:1rem; margin-top:18px">Selecciona un caso</h3>
+    <div class="case-cards">
+      <div class="case-card" onclick="selectCase(1)" id="card-1">
+        <span class="case-badge badge-digital">Digital / SaaS</span>
+        <h3>Caso 1: Plataforma SaaS con IA</h3>
+        <p>Modelo B2B por suscripción para mejorar la retención estudiantil.</p>
+      </div>
+      <div class="case-card" onclick="selectCase(2)" id="card-2">
+        <span class="case-badge badge-iot">IoT / Hardware</span>
+        <h3>Caso 2: Sensor IoT de Eficiencia Energética</h3>
+        <p>Dispositivo y software para reducir costos energéticos en PYMES.</p>
+      </div>
+      <div class="case-card" onclick="selectCase(3)" id="card-3">
+        <span class="case-badge badge-sustain">Sustentable</span>
+        <h3>Caso 3: Envase Biodegradable</h3>
+        <p>Innovación productiva con riesgo comercial y regulación ambiental.</p>
+      </div>
+      <div class="case-card" onclick="selectCase(4)" id="card-4">
+        <span class="case-badge badge-health">HealthTech</span>
+        <h3>Caso 4: Telemedicina con IA</h3>
+        <p>Plataforma de monitoreo remoto y priorización clínica para redes de salud.</p>
+      </div>
+      <div class="case-card" onclick="selectCase(5)" id="card-5">
+        <span class="case-badge badge-agro">AgroTech</span>
+        <h3>Caso 5: Agricultura de Precisión</h3>
+        <p>Drones, sensores y analítica para optimizar riego, fertilización y rendimiento agrícola.</p>
+      </div>
+      <div class="case-card" onclick="selectCase(6)" id="card-6">
+        <span class="case-badge badge-circular">Economía circular</span>
+        <h3>Caso 6: Reacondicionamiento Electrónico</h3>
+        <p>Centro circular para recuperar, reacondicionar y revender equipos tecnológicos usados.</p>
+      </div>
+    </div>
+
+    <div id="welcome-error" class="alert alert-error hidden" style="margin-top:14px"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="startCase()">Comenzar simulación</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cómo trabajar el caso</div>
+    <ol style="padding-left:20px; color:#444; font-size:0.92rem; line-height:1.9">
+      <li>Lee el contexto empresarial y la tabla de datos.</li>
+      <li>Revisa la guía de cálculo antes de responder.</li>
+      <li>Ingresa tu respuesta y valida.</li>
+      <li>Si el valor es incorrecto, el simulador indicará el error sin revelar la respuesta final.</li>
+      <li>Las preguntas de justificación deben conectar indicadores financieros con riesgo, mercado, ejecución y capacidad empresarial.</li>
+    </ol>
+  </div>
+</div>
+
+<div id="case-screen" class="container hidden">
+  <div class="card" style="margin-top:24px">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div>
+        <div id="case-badge-display"></div>
+        <h2 id="case-title" style="font-size:1.23rem; margin-top:6px"></h2>
+        <p id="case-student-label" class="subtle"></p>
+      </div>
+      <button class="btn btn-outline" onclick="resetApp()">Cambiar de caso</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Contexto del caso</div>
+    <div id="case-context" style="font-size:0.92rem; color:#333; line-height:1.8"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos financieros del caso</div>
+    <div id="case-data-tables"></div>
+  </div>
+
+  <div class="card" id="question-card">
+    <div class="step-meta">
+      <span id="progress-label">Pregunta 1 de 10</span>
+      <span id="points-label">Puntaje: 0 / 100</span>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+
+    <h3 class="step-title"><span class="question-number" id="step-number">1</span><span id="step-title-text"></span></h3>
+    <p id="step-purpose" class="subtle"></p>
+
+    <div class="guide-grid">
+      <div class="guide-box">
+        <h4>Guía de cálculo / procedimiento</h4>
+        <div id="step-guide"></div>
+      </div>
+      <div class="business-box">
+        <h4>Análisis empresarial esperado</h4>
+        <div id="step-business"></div>
+      </div>
+    </div>
+
+    <div class="form-group" id="answer-area"></div>
+    <div id="step-feedback" class="alert hidden"></div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-validate" onclick="validateCurrentStep()">Validar respuesta</button>
+      <button class="btn btn-warning hidden" id="btn-continue-partial" onclick="continueAfterPartial()">Continuar con puntaje parcial</button>
+      <button class="btn btn-secondary hidden" id="btn-skip" onclick="skipAfterAttempts()">Continuar sin revelar respuesta</button>
+      <button class="btn btn-success hidden" id="btn-next" onclick="nextStep()">Continuar</button>
+    </div>
+  </div>
+
+  <div id="results-section" class="hidden">
+    <div class="card">
+      <div class="score-box" id="score-box"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Resumen de desempeño</div>
+      <div id="results-detail" class="summary-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle de respuestas y valoración por pregunta</div>
+      <div id="answer-report"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Retroalimentación final sin pauta numérica</div>
+      <div id="final-feedback"></div>
+      <div class="alert alert-info" style="margin-top:14px">
+        El simulador no revela la pauta numérica final durante la actividad. La revisión docente puede contrastar las respuestas con la hoja de cálculo o pauta del curso.
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-success" onclick="window.print()">Imprimir / guardar informe PDF</button>
+      <button class="btn btn-outline" onclick="resetApp()">Cambiar de caso</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// DATOS DE CASOS FINANCIEROS
+// Todos los valores monetarios en millones de pesos (MM$)
+// =====================================================================
+const CASES = {
+  1: {
+    title: 'Caso 1: Plataforma SaaS con Inteligencia Artificial para Retención Estudiantil',
+    badgeClass: 'badge-digital',
+    badgeText: 'Digital / SaaS',
+    context: `
+      <p><strong>Startup EdTech</strong> está desarrollando una plataforma SaaS basada en inteligencia artificial
+      que analiza el comportamiento académico de los estudiantes y genera alertas tempranas para mejorar la retención
+      en universidades. El modelo de negocio es B2B: las universidades pagan una tarifa anual de suscripción por número
+      de estudiantes activos.</p>
+      <p style="margin-top:10px">La inversión inicial de <strong>MM$ 800</strong> cubre el desarrollo del software,
+      infraestructura en la nube y los primeros 12 meses de operación. Se proyecta crecer de 5 universidades el primer
+      año a 20 universidades al año 5. El financiamiento combina capital de riesgo y crédito bancario. La tasa de impuesto
+      corporativa es 27%.</p>
+    `,
+    debt_pct: 0.40, equity_pct: 0.60, kd_before_tax: 0.08, tax_rate: 0.27, ke: 0.14,
+    initial_investment: -800,
+    revenues:     [0, 200, 350, 500, 650, 800],
+    var_costs:    [0,  20,  35,  50,  65,  80],
+    fixed_costs:  [0, 120, 120, 130, 130, 140],
+    add_invest:   [0,   0,   0,   0,   0,   0],
+    working_cap:  [0,   0,   0,   0,   0,   0],
+    terminal_value: 500,
+    assumptions: [
+      'Inversión inicial: MM$ 800',
+      'Ingresos por suscripción anual: de MM$ 200 a MM$ 800',
+      'Costos variables: 10% sobre ingresos',
+      'Costos fijos: MM$ 120-140 anuales',
+      'Valor terminal año 5: MM$ 500',
+      'Tasa de impuesto: 27%',
+      'Financiamiento: 40% deuda / 60% patrimonio'
+    ],
+    risk_keywords: ['suscripci','retenci','churn','clientes','mercado','competencia','tecnol','escalab','adopci','contrato','renovaci'],
+    justify_keywords: ['van','tir','wacc','payback','positivo','viable','recupera','retorno','supera','riesgo','flujo','beneficio'],
+    viability: 'Si'
+  },
+  2: {
+    title: 'Caso 2: Sensor IoT para Eficiencia Energética en PYMES',
+    badgeClass: 'badge-iot',
+    badgeText: 'IoT / Hardware',
+    context: `
+      <p><strong>EnergyTech Ltda.</strong> ha desarrollado un sensor IoT que monitorea en tiempo real el consumo
+      eléctrico de maquinaria industrial y permite reducir hasta un 25% la factura de energía de pequeñas y medianas
+      empresas. El dispositivo se vende junto con una suscripción de software de análisis.</p>
+      <p style="margin-top:10px">La inversión inicial de <strong>MM$ 1.200</strong> cubre prototipado industrial,
+      certificación eléctrica, equipamiento de manufactura y capital de trabajo inicial de MM$ 150. En el año 3 se requiere
+      una inversión adicional de MM$ 80. Al final del horizonte, los equipos tienen un valor de desecho de MM$ 200 y se
+      recupera el capital de trabajo. La tasa de impuesto es 27%.</p>
+    `,
+    debt_pct: 0.50, equity_pct: 0.50, kd_before_tax: 0.09, tax_rate: 0.27, ke: 0.13,
+    initial_investment: -1350,
+    revenues:    [0, 500, 700, 900, 1050, 1100],
+    var_costs:   [0, 150, 210, 270, 315, 330],
+    fixed_costs: [0, 100, 100, 110, 110, 120],
+    add_invest:  [0,   0,   0, -80,   0,   0],
+    working_cap: [0,   0,   0,   0,   0, 150],
+    terminal_value: 200,
+    assumptions: [
+      'Inversión inicial: MM$ 1.200 + capital de trabajo MM$ 150',
+      'Ingresos: de MM$ 500 a MM$ 1.100',
+      'Costos variables: 30% sobre ingresos',
+      'Costos fijos: MM$ 100-120 anuales',
+      'Inversión adicional año 3: MM$ 80',
+      'Valor de desecho año 5: MM$ 200',
+      'Recuperación capital de trabajo año 5: MM$ 150',
+      'Financiamiento: 50% deuda / 50% patrimonio'
+    ],
+    risk_keywords: ['certif','manufactur','competen','precio','proveedor','tecnolog','obsolescen','adopci','pyme','demanda','capital','inventar'],
+    justify_keywords: ['van','tir','wacc','payback','positivo','viable','recupera','retorno','supera','riesgo','flujo','beneficio','margen'],
+    viability: 'Si'
+  },
+  3: {
+    title: 'Caso 3: Envase Biodegradable para Alimentos',
+    badgeClass: 'badge-sustain',
+    badgeText: 'Sustentable',
+    context: `
+      <p><strong>BioPackaging S.A.</strong> produce envases biodegradables elaborados a partir de almidón de maíz
+      y fibra de caña de azúcar, orientados al sector alimentario. La empresa busca aprovechar la regulación ambiental
+      que restringe el plástico de un solo uso.</p>
+      <p style="margin-top:10px">La inversión inicial de <strong>MM$ 600</strong> financia la planta de producción
+      y maquinaria. En el año 3 se debe realizar una inversión adicional de MM$ 100 para expandir capacidad instalada.
+      Al término del proyecto, los activos tienen un valor residual de MM$ 150. El proyecto enfrenta riesgo comercial
+      moderado por la competencia de sustitutos más baratos.</p>
+    `,
+    debt_pct: 0.60, equity_pct: 0.40, kd_before_tax: 0.10, tax_rate: 0.27, ke: 0.16,
+    initial_investment: -600,
+    revenues:    [0, 300, 420, 540, 660, 780],
+    var_costs:   [0, 120, 168, 216, 264, 312],
+    fixed_costs: [0,  80,  80,  90,  90, 100],
+    add_invest:  [0,   0,   0,-100,   0,   0],
+    working_cap: [0,   0,   0,   0,   0,   0],
+    terminal_value: 150,
+    assumptions: [
+      'Inversión inicial: MM$ 600',
+      'Ingresos: de MM$ 300 a MM$ 780',
+      'Costos variables: 40% sobre ingresos',
+      'Costos fijos: MM$ 80-100 anuales',
+      'Inversión adicional año 3: MM$ 100',
+      'Valor residual año 5: MM$ 150',
+      'Riesgo comercial moderado',
+      'Financiamiento: 60% deuda / 40% patrimonio'
+    ],
+    risk_keywords: ['materia prima','regulaci','ambient','competen','sustit','precio','mercado','demanda','comerci','cliente','certif','provee'],
+    justify_keywords: ['van','tir','wacc','payback','positivo','viable','recupera','retorno','supera','riesgo','flujo','beneficio','margen','depende'],
+    viability: 'Depende'
+  },
+  4: {
+    title: 'Caso 4: Plataforma de Telemedicina con Inteligencia Artificial',
+    badgeClass: 'badge-health',
+    badgeText: 'HealthTech',
+    context: `
+      <p><strong>SaludConecta SpA</strong> está desarrollando una plataforma de telemedicina con inteligencia artificial
+      para priorizar pacientes crónicos, generar alertas clínicas y reducir tiempos de atención en centros de salud regionales.
+      El modelo combina licencias anuales para instituciones de salud y servicios de implementación.</p>
+      <p style="margin-top:10px">La inversión inicial de <strong>MM$ 950</strong> cubre integración con sistemas clínicos,
+      cumplimiento normativo, ciberseguridad, entrenamiento de modelos y despliegue inicial. En el año 3 se requiere
+      inversión adicional de MM$ 120 para certificaciones e interoperabilidad avanzada. Al final del horizonte se estima
+      recuperación de capital de trabajo de MM$ 80 y valor terminal de MM$ 300. La tasa de impuesto es 27%.</p>
+    `,
+    debt_pct: 0.45, equity_pct: 0.55, kd_before_tax: 0.085, tax_rate: 0.27, ke: 0.15,
+    initial_investment: -950,
+    revenues:    [0, 180, 360, 580, 760, 940],
+    var_costs:   [0,  45,  90, 145, 190, 235],
+    fixed_costs: [0, 160, 170, 185, 200, 210],
+    add_invest:  [0,   0,   0,-120,   0,   0],
+    working_cap: [0,   0,   0,   0,   0,  80],
+    terminal_value: 300,
+    assumptions: [
+      'Inversión inicial: MM$ 950',
+      'Ingresos por licencias e implementación: de MM$ 180 a MM$ 940',
+      'Costos variables: soporte clínico, nube, interoperabilidad y atención incremental',
+      'Costos fijos: equipo clínico-tecnológico, seguridad, cumplimiento y operaciones',
+      'Inversión adicional año 3: MM$ 120 para certificaciones e interoperabilidad',
+      'Recuperación de capital de trabajo año 5: MM$ 80',
+      'Valor terminal año 5: MM$ 300',
+      'Financiamiento: 45% deuda / 55% patrimonio'
+    ],
+    risk_keywords: ['regulaci','salud','paciente','ciberseguridad','interoperabilidad','adopci','hospital','clínic','datos','privacidad','contrato','implementaci'],
+    justify_keywords: ['van','tir','wacc','payback','negativo','no viable','depende','riesgo','flujo','adopción','regulación','implementación'],
+    viability: 'No'
+  },
+  5: {
+    title: 'Caso 5: Agricultura de Precisión con Drones y Analítica Predictiva',
+    badgeClass: 'badge-agro',
+    badgeText: 'AgroTech',
+    context: `
+      <p><strong>AgroData Analytics</strong> ofrece servicios de drones, sensores de humedad y analítica predictiva
+      para optimizar riego, fertilización y detección temprana de plagas en predios agrícolas medianos. El modelo de
+      negocio combina contratos de temporada, reportes agronómicos y suscripciones de monitoreo.</p>
+      <p style="margin-top:10px">La inversión inicial de <strong>MM$ 760</strong> incluye drones, sensores, plataforma de datos,
+      capacitación de pilotos y capital de trabajo inicial. En el año 2 se realiza una inversión adicional de MM$ 60
+      para ampliar cobertura territorial. En el año 5 se recuperan MM$ 60 de capital de trabajo y se estima un valor
+      residual de MM$ 180 por equipos y software reutilizable. La tasa de impuesto es 27%.</p>
+    `,
+    debt_pct: 0.35, equity_pct: 0.65, kd_before_tax: 0.09, tax_rate: 0.27, ke: 0.16,
+    initial_investment: -760,
+    revenues:    [0, 250, 420, 620, 850, 980],
+    var_costs:   [0,  75, 126, 186, 255, 294],
+    fixed_costs: [0,  90, 110, 120, 140, 150],
+    add_invest:  [0,   0, -60,   0,   0,   0],
+    working_cap: [0,   0,   0,   0,   0,  60],
+    terminal_value: 180,
+    assumptions: [
+      'Inversión inicial: MM$ 760',
+      'Ingresos por contratos, monitoreo y reportes: de MM$ 250 a MM$ 980',
+      'Costos variables: operación de drones, técnicos de campo, datos y mantenimiento',
+      'Costos fijos: equipo agronómico, plataforma, seguros y administración',
+      'Inversión adicional año 2: MM$ 60 para ampliar cobertura territorial',
+      'Recuperación capital de trabajo año 5: MM$ 60',
+      'Valor residual año 5: MM$ 180',
+      'Financiamiento: 35% deuda / 65% patrimonio'
+    ],
+    risk_keywords: ['clima','temporada','agricult','predio','adopci','precio','drone','sensor','dato','cosecha','cliente','contrato','regulaci'],
+    justify_keywords: ['van','tir','wacc','payback','positivo','viable','marginal','riesgo','temporada','adopción','flujo','retorno'],
+    viability: 'Depende'
+  },
+  6: {
+    title: 'Caso 6: Centro Circular de Reacondicionamiento de Equipos Electrónicos',
+    badgeClass: 'badge-circular',
+    badgeText: 'Economía circular',
+    context: `
+      <p><strong>ReTech Circular</strong> busca instalar un centro para recuperar, diagnosticar, reacondicionar y revender
+      notebooks, tablets y equipos electrónicos provenientes de empresas, universidades y servicios públicos. El modelo combina
+      compra de lotes usados, reparación, garantía limitada y venta B2B/B2C.</p>
+      <p style="margin-top:10px">La inversión inicial de <strong>MM$ 1.220</strong> considera planta, herramientas, stock inicial,
+      sistemas de trazabilidad y capital de trabajo. En el año 3 se requiere una inversión adicional de MM$ 140 para ampliar
+      capacidad y certificaciones de manejo de residuos. Al final del horizonte se recuperan MM$ 120 de capital de trabajo y
+      el valor residual de equipos e infraestructura asciende a MM$ 250. La tasa de impuesto es 27%.</p>
+    `,
+    debt_pct: 0.55, equity_pct: 0.45, kd_before_tax: 0.105, tax_rate: 0.27, ke: 0.17,
+    initial_investment: -1220,
+    revenues:    [0, 400, 560, 740, 900, 1100],
+    var_costs:   [0, 220, 300, 390, 470,  570],
+    fixed_costs: [0, 150, 165, 175, 190,  205],
+    add_invest:  [0,   0,   0,-140,   0,    0],
+    working_cap: [0,   0,   0,   0,   0,  120],
+    terminal_value: 250,
+    assumptions: [
+      'Inversión inicial: MM$ 1.220',
+      'Ingresos por venta de equipos reacondicionados: de MM$ 400 a MM$ 1.100',
+      'Costos variables altos: compra de lotes, repuestos, garantía y logística inversa',
+      'Costos fijos: planta, técnicos, certificaciones y administración',
+      'Inversión adicional año 3: MM$ 140',
+      'Recuperación capital de trabajo año 5: MM$ 120',
+      'Valor residual año 5: MM$ 250',
+      'Financiamiento: 55% deuda / 45% patrimonio'
+    ],
+    risk_keywords: ['stock','repuesto','garantía','logística','residuo','certific','calidad','precio','demanda','margen','proveedor','obsolescencia'],
+    justify_keywords: ['van','tir','wacc','payback','negativo','no viable','riesgo','margen','costos','flujo','liquidez','obsolescencia'],
+    viability: 'No'
+  }
+};
+
+// =====================================================================
+// CÁLCULOS FINANCIEROS
+// =====================================================================
+function calcKdNet(c) { return c.kd_before_tax * (1 - c.tax_rate) * 100; }
+function calcWACC(c) {
+  const kdNet = c.kd_before_tax * (1 - c.tax_rate);
+  return (c.debt_pct * kdNet + c.equity_pct * c.ke) * 100;
+}
+function calcFCL(c) {
+  const fcl = [];
+  for (let y = 1; y <= 5; y++) {
+    const ebit = c.revenues[y] - c.var_costs[y] - c.fixed_costs[y];
+    const tax = ebit > 0 ? ebit * c.tax_rate : 0;
+    let flow = ebit - tax;
+    flow += c.add_invest[y];
+    flow += c.working_cap[y];
+    if (y === 5) flow += c.terminal_value;
+    fcl.push(parseFloat(flow.toFixed(2)));
+  }
+  return fcl;
+}
+function calcVAN(c, fcl) {
+  const wacc = calcWACC(c) / 100;
+  let van = c.initial_investment;
+  for (let y = 0; y < 5; y++) {
+    van += fcl[y] / Math.pow(1 + wacc, y + 1);
+  }
+  return parseFloat(van.toFixed(2));
+}
+function calcTIR(c, fcl) {
+  const flows = [c.initial_investment, ...fcl];
+  function npv(rate) {
+    return flows.reduce((acc, f, i) => acc + f / Math.pow(1 + rate, i), 0);
+  }
+  let lo = -0.9, hi = 1.5;
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2;
+    if (npv(mid) > 0) lo = mid; else hi = mid;
+    if (Math.abs(hi - lo) < 0.0001) break;
+  }
+  return parseFloat((((lo + hi) / 2) * 100).toFixed(2));
+}
+function calcPayback(c, fcl) {
+  let acum = c.initial_investment;
+  for (let y = 0; y < 5; y++) {
+    const prev = acum;
+    acum += fcl[y];
+    if (acum >= 0) {
+      return parseFloat((y + 1 + prev / (prev - acum) - 1).toFixed(2));
+    }
+  }
+  return null;
+}
+function calcCorrectValues(cid) {
+  const c = CASES[cid];
+  const fcl = calcFCL(c);
+  return {
+    kd_net: parseFloat(calcKdNet(c).toFixed(4)),
+    wacc: parseFloat(calcWACC(c).toFixed(4)),
+    fcl1: fcl[0],
+    fcl5: fcl[4],
+    van: calcVAN(c, fcl),
+    tir: calcTIR(c, fcl),
+    payback: calcPayback(c, fcl),
+    viability: c.viability,
+    fcl_all: fcl
+  };
+}
+
+// =====================================================================
+// PREGUNTAS SECUENCIALES
+// =====================================================================
+const STEPS = [
+  {
+    id:'kd_net', title:'Costo de deuda después de impuestos', pts:8, type:'number', unit:'%', placeholder:'Ej: 5.84',
+    purpose:'Primero se estima el costo efectivo de la deuda, reconociendo el escudo tributario generado por los intereses.',
+    formula:'Kd_neto = Kd_bruto × (1 − T)',
+    guide:[
+      'Identifica el costo de deuda antes de impuestos entregado en la tabla.',
+      'Identifica la tasa de impuesto corporativo.',
+      'Convierte ambas tasas a decimales si estás calculando manualmente.',
+      'Multiplica Kd por (1 − T).',
+      'Entrega la respuesta en porcentaje, sin escribir el signo %.'
+    ],
+    business:[
+      'La deuda no se evalúa solo por su tasa nominal; el efecto tributario reduce su costo efectivo.',
+      'En empresas innovadoras, más deuda puede tensionar liquidez si los flujos aún son inciertos.',
+      'El análisis debe conectar tasa, riesgo de incumplimiento, garantías y flexibilidad financiera.'
+    ],
+    feedback:'Revisa si aplicaste el escudo tributario. No uses directamente la tasa de deuda bruta.'
+  },
+  {
+    id:'wacc', title:'Costo promedio ponderado de capital (WACC)', pts:10, type:'number', unit:'%', placeholder:'Ej: 10.74',
+    purpose:'El WACC será la tasa de descuento para valorar los flujos disponibles para deuda y patrimonio.',
+    formula:'WACC = (%D × Kd_neto) + (%E × Ke)',
+    guide:[
+      'Usa el Kd después de impuestos calculado en la pregunta anterior.',
+      'Identifica el porcentaje de deuda y patrimonio.',
+      'Multiplica cada costo por su ponderación.',
+      'Suma los componentes ponderados.',
+      'Entrega la tasa final en porcentaje.'
+    ],
+    business:[
+      'El WACC debe ser consistente con el riesgo, moneda, inflación y horizonte de los flujos.',
+      'No mezcles flujos para accionistas con una tasa para todos los financiadores.',
+      'Un WACC más alto exige flujos futuros más sólidos para justificar la innovación.'
+    ],
+    feedback:'Revisa si usaste Kd neto y si las ponderaciones de deuda y patrimonio suman 100%.'
+  },
+  {
+    id:'fcl1', title:'Flujo de caja libre del Año 1', pts:8, type:'number', unit:'MM$', placeholder:'Ej: 43.8',
+    purpose:'El flujo del primer año permite evaluar si la innovación comienza a generar caja operacional suficiente.',
+    formula:'FCL_1 = (Ingresos_1 − Costos variables_1 − Costos fijos_1) × (1 − T)',
+    guide:[
+      'Calcula EBIT del año 1: ingresos menos costos variables y costos fijos.',
+      'Calcula el impuesto sobre el EBIT si el EBIT es positivo.',
+      'Resta el impuesto al EBIT.',
+      'No incluyas inversión inicial porque pertenece al año 0.',
+      'Entrega el resultado en millones de pesos.'
+    ],
+    business:[
+      'El año 1 suele reflejar validación comercial inicial, curva de aprendizaje y eficiencia operativa temprana.',
+      'Un flujo positivo no basta: debe evaluarse si es escalable y repetible.',
+      'Observa si el margen se sostiene o depende de supuestos comerciales frágiles.'
+    ],
+    feedback:'Revisa el EBIT del año 1 y el impuesto. No incluyas el flujo del año 0.'
+  },
+  {
+    id:'fcl5', title:'Flujo de caja libre del Año 5 incluyendo valor de desecho', pts:8, type:'number', unit:'MM$', placeholder:'Ej: 923.4',
+    purpose:'El flujo final combina la operación del último año con recuperación de valor económico residual.',
+    formula:'FCL_5 = EBIT_5 × (1 − T) + recuperación CT + valor de desecho + inversión adicional_5',
+    guide:[
+      'Calcula EBIT del año 5.',
+      'Resta impuestos si corresponde.',
+      'Agrega recuperación de capital de trabajo si el caso la considera.',
+      'Agrega el valor de desecho o terminal.',
+      'Incluye inversiones adicionales del año 5 solo si existen.'
+    ],
+    business:[
+      'El valor terminal puede representar activos recuperables, continuidad del negocio o propiedad intelectual.',
+      'No debe duplicar beneficios que ya están incluidos en los flujos operacionales.',
+      'Evalúa cuánto depende la viabilidad del valor terminal: si pesa demasiado, el caso es más riesgoso.'
+    ],
+    feedback:'Revisa si incorporaste el valor de desecho y la recuperación de capital de trabajo cuando corresponda.'
+  },
+  {
+    id:'van_analysis', title:'Interpretación del VAN entregado', pts:8, type:'textarea', showMetrics:true, placeholder:'Interpreta el VAN entregado y explica qué implica para la creación de valor.',
+    purpose:'El VAN ya está calculado para que el foco sea interpretar la creación de valor y no repetir una operación mecánica.',
+    formula:'VAN = I_0 + Σ[FCL_t / (1 + WACC)^t]',
+    guide:[
+      'Observa el valor del VAN mostrado en el recuadro de indicadores.',
+      'Determina si es positivo, negativo o marginal.',
+      'Explica qué significa en términos de creación o destrucción de valor.',
+      'Relaciona el VAN con la inversión inicial y con el riesgo de los flujos.',
+      'No vuelvas a calcularlo: interpreta su relevancia empresarial.'
+    ],
+    business:[
+      'Un VAN positivo no elimina la incertidumbre: exige revisar adopción, costos, escalamiento y valor terminal.',
+      'Un VAN marginal puede requerir pilotos, contratos previos o sensibilidad antes de escalar.',
+      'El análisis debe indicar si el valor creado es suficiente para compensar el riesgo de innovación.'
+    ],
+    eval_keywords:['van','positivo','negativo','marginal','valor','crea','destruye','inversión','riesgo','flujo','terminal','adopción'],
+    feedback:'Interpreta el signo y magnitud del VAN y conéctalo con creación de valor, inversión inicial y riesgo del negocio.'
+  },
+  {
+    id:'tir_analysis', title:'Interpretación de la TIR entregada', pts:8, type:'textarea', showMetrics:true, placeholder:'Compara la TIR con el WACC y explica si el retorno compensa el riesgo.',
+    purpose:'La TIR ya está entregada. El objetivo es analizar si el retorno implícito supera el costo de capital y qué tan robusta es esa señal.',
+    formula:'TIR = tasa r que hace VAN(r) = 0',
+    guide:[
+      'Observa la TIR y el WACC mostrados en el recuadro de indicadores.',
+      'Compara si la TIR es mayor, menor o muy cercana al WACC.',
+      'Explica qué significa esa diferencia para la decisión.',
+      'Evalúa si la TIR podría estar sobreestimando el atractivo del proyecto.',
+      'Complementa la lectura con VAN y riesgo.'
+    ],
+    business:[
+      'La TIR comunica retorno porcentual, pero no mide valor absoluto creado.',
+      'Una TIR alta puede depender de flujos terminales o supuestos de crecimiento exigentes.',
+      'La decisión gerencial debe evitar usar la TIR aislada del VAN, WACC y payback.'
+    ],
+    eval_keywords:['tir','wacc','mayor','menor','retorno','costo','capital','riesgo','van','atractivo','compara'],
+    feedback:'Compara explícitamente TIR versus WACC y explica qué implica para el retorno exigido y el riesgo.'
+  },
+  {
+    id:'payback_analysis', title:'Interpretación del payback entregado', pts:8, type:'textarea', showMetrics:true, placeholder:'Analiza si el plazo de recuperación es razonable para este tipo de innovación.',
+    purpose:'El payback ya está calculado. El foco es evaluar liquidez, velocidad de recuperación y exposición al riesgo.',
+    formula:'Payback = año previo + monto pendiente / flujo del año de recuperación',
+    guide:[
+      'Observa el payback entregado en el recuadro de indicadores.',
+      'Evalúa si el plazo es razonable para la vida tecnológica y comercial del proyecto.',
+      'Relaciona la recuperación con liquidez, riesgo y necesidad de financiamiento.',
+      'Reconoce que el payback no mide creación total de valor.',
+      'Complementa con VAN y TIR.'
+    ],
+    business:[
+      'Un payback rápido reduce exposición a incertidumbre de mercado y tecnología.',
+      'Un payback largo exige mayor confianza en adopción, financiamiento y ejecución.',
+      'El plazo de recuperación importa especialmente cuando la innovación consume caja antes de escalar.'
+    ],
+    eval_keywords:['payback','recupera','plazo','liquidez','riesgo','caja','financiamiento','van','tir','innovación','horizonte'],
+    feedback:'Analiza el payback como indicador de liquidez y riesgo, no como único criterio de viabilidad.'
+  },
+  {
+    id:'sensitivity', title:'Pregunta adicional: supuesto crítico y sensibilidad', pts:8, type:'textarea', showMetrics:true, placeholder:'Identifica el supuesto que más podría cambiar la decisión y explica cómo afectaría VAN, TIR o payback.',
+    purpose:'Antes de decidir, se debe identificar qué supuesto podría modificar la viabilidad del proyecto.',
+    formula:'Sensibilidad = cambio en indicador financiero ante variación de un supuesto crítico',
+    guide:[
+      'Elige un supuesto crítico: ingresos, adopción, precio, costos variables, inversión, WACC o valor terminal.',
+      'Explica la dirección del efecto: qué pasa si el supuesto empeora.',
+      'Conecta ese cambio con VAN, TIR o payback.',
+      'Indica si la decisión seguiría siendo defendible.',
+      'Propón una prueba o dato que permitiría validar ese supuesto.'
+    ],
+    business:[
+      'En innovación, la sensibilidad suele concentrarse en adopción, precio, costos de escalamiento y valor terminal.',
+      'El objetivo gerencial no es solo calcular, sino saber qué variable debe monitorearse primero.',
+      'Una buena respuesta sugiere pilotos, contratos, benchmarks, pruebas comerciales o límites de inversión.'
+    ],
+    eval_keywords:['sensibilidad','supuesto','ingreso','adopción','precio','costo','wacc','terminal','van','tir','payback','piloto','contrato'],
+    feedback:'Identifica un supuesto concreto y explica cómo cambiaría los indicadores y la decisión empresarial.'
+  },
+  {
+    id:'viability', title:'Decisión de viabilidad financiera', pts:9, type:'select', showMetrics:true,
+    purpose:'La decisión no debe depender de intuición, sino de una lectura integrada de indicadores y riesgos.',
+    formula:'Decisión = lectura conjunta de VAN + TIR vs WACC + payback + riesgo',
+    guide:[
+      'Observa los valores entregados de VAN, TIR, WACC y payback.',
+      'Evalúa si el VAN indica creación de valor.',
+      'Evalúa si la TIR supera el WACC con holgura suficiente.',
+      'Evalúa si el payback es razonable para el tipo de innovación.',
+      'Selecciona Sí, No o Depende.'
+    ],
+    business:[
+      '“Sí” requiere evidencia de creación de valor y consistencia de supuestos.',
+      '“No” requiere mostrar que el proyecto no compensa inversión o riesgo.',
+      '“Depende” es válido cuando la viabilidad exige condiciones: contratos, pilotos, financiamiento, regulación o sensibilidad.'
+    ],
+    feedback:'Revisa la coherencia entre VAN, TIR, WACC, payback y riesgo empresarial.'
+  },
+  {
+    id:'justify', title:'Justificación de la decisión con indicadores entregados', pts:10, type:'textarea', showMetrics:true, placeholder:'Usa explícitamente VAN, TIR, WACC y payback para justificar tu decisión.',
+    purpose:'La justificación transforma indicadores financieros entregados en una recomendación gerencial defendible.',
+    formula:'Justificación = indicador financiero + interpretación + implicancia empresarial + condición de riesgo',
+    guide:[
+      'Declara tu decisión principal.',
+      'Usa explícitamente los valores entregados de VAN, TIR y payback.',
+      'Compara la TIR con el WACC.',
+      'Explica qué indicador pesa más para este caso y por qué.',
+      'Conecta los resultados con adopción, escalamiento, capacidad operativa o financiamiento.'
+    ],
+    business:[
+      'Una buena justificación muestra cómo los números afectan inversión, liquidez y estrategia.',
+      'Debe considerar si la empresa puede ejecutar el crecimiento proyectado.',
+      'Debe identificar si la innovación depende de contratos, capacidades técnicas, capital de trabajo o ventajas competitivas.'
+    ],
+    eval_keywords:['van','tir','wacc','payback','viable','depende','riesgo','adopción','capacidad','financiamiento','valor','retorno','liquidez'],
+    feedback:'Agrega VAN, TIR, WACC y payback con interpretación empresarial, no solo menciones sueltas.'
+  },
+  {
+    id:'risk', title:'Principal riesgo financiero del caso', pts:8, type:'textarea', showMetrics:true, placeholder:'Identifica un riesgo y explica cómo afecta flujos, WACC, VAN, TIR o payback.',
+    purpose:'El análisis de riesgo muestra qué podría invalidar la viabilidad financiera estimada.',
+    formula:'Riesgo financiero = evento incierto + mecanismo de impacto + indicador afectado + acción de mitigación',
+    guide:[
+      'Identifica un riesgo principal: mercado, ejecución, tecnología, financiamiento, regulación, costos o capital de trabajo.',
+      'Explica el mecanismo financiero: reduce ingresos, aumenta costos, retrasa flujos o eleva tasa de descuento.',
+      'Indica qué indicador se vería afectado: VAN, TIR, WACC o payback.',
+      'Propón un control o hito de validación.',
+      'Conecta el riesgo con el contexto específico del caso.'
+    ],
+    business:[
+      'En innovación, el riesgo central suele estar en adopción, escalamiento, costos de aprendizaje o financiamiento.',
+      'El riesgo debe traducirse en una variable del flujo o de la tasa.',
+      'Una buena recomendación gerencial propone sensibilidad, piloto, contrato mínimo, proveedor alternativo o etapa de inversión.'
+    ],
+    eval_keywords:['riesgo','mercado','costos','ingresos','adopción','financiamiento','proveedor','competencia','regulación','van','tir','wacc','payback','mitigar','piloto'],
+    feedback:'Profundiza el riesgo: indica cómo impacta ingresos, costos, inversión, WACC, VAN, TIR o payback.'
+  },
+  {
+    id:'managerial_action', title:'Pregunta adicional: recomendación de implementación', pts:7, type:'textarea', showMetrics:true, placeholder:'Propón una acción gerencial antes de invertir completamente: piloto, contrato, hito, financiamiento o control.',
+    purpose:'La última pregunta convierte la evaluación financiera en un plan de acción para reducir incertidumbre.',
+    formula:'Acción gerencial = decisión + condición + hito verificable + métrica de seguimiento',
+    guide:[
+      'Propón una acción concreta antes de escalar el proyecto.',
+      'Define qué evidencia debe obtenerse: ventas, adopción, costo unitario, margen, contrato o financiamiento.',
+      'Conecta la acción con un indicador financiero.',
+      'Indica cómo esa acción reduce riesgo o mejora la decisión.',
+      'Evita respuestas genéricas como “hacer seguimiento” sin métrica.'
+    ],
+    business:[
+      'La innovación puede financiarse por etapas para no comprometer todo el capital desde el inicio.',
+      'Los hitos deben transformar incertidumbre en información: prueba comercial, contrato mínimo, costo validado o capacidad instalada.',
+      'Una buena recomendación permite decidir si escalar, esperar, rediseñar o abandonar.'
+    ],
+    eval_keywords:['piloto','contrato','hito','métrica','adopción','financiamiento','costo','margen','escalar','esperar','abandonar','validar','van','tir','payback'],
+    feedback:'Propón una acción concreta con hito verificable y relación con un indicador financiero.'
+  }
+];
+
+// =====================================================================
+// ESTADO
+// =====================================================================
+let selectedCaseId = null;
+let correctVals = null;
+let currentStepIndex = 0;
+let answers = {};
+let assessments = {};
+let attempts = {};
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getTeamMembers() {
+  return Array.from(document.querySelectorAll('.member-input'))
+    .map(input => input.value.trim())
+    .filter(Boolean);
+}
+
+function addMemberField() {
+  const container = document.getElementById('team-members');
+  const count = container.querySelectorAll('.member-input').length + 1;
+  const row = document.createElement('div');
+  row.className = 'team-member-row';
+  row.innerHTML = `
+    <input type="text" class="member-input" placeholder="Nombre del integrante ${count}">
+    <button type="button" class="btn btn-secondary btn-small" onclick="removeMemberField(this)">Quitar</button>
+  `;
+  container.appendChild(row);
+  row.querySelector('input').focus();
+}
+
+function removeMemberField(btn) {
+  btn.closest('.team-member-row').remove();
+}
+
+function selectCase(id) {
+  selectedCaseId = id;
+  document.querySelectorAll('.case-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('card-' + id).classList.add('selected');
+}
+
+function startCase() {
+  if (!selectedCaseId) {
+    const error = document.getElementById('welcome-error');
+    error.textContent = 'Por favor selecciona un caso antes de continuar.';
+    error.classList.remove('hidden');
+    return;
+  }
+  correctVals = calcCorrectValues(selectedCaseId);
+  currentStepIndex = 0;
+  answers = {};
+  assessments = {};
+  attempts = {};
+  renderCase(selectedCaseId);
+  document.getElementById('welcome-screen').classList.add('hidden');
+  document.getElementById('case-screen').classList.remove('hidden');
+  document.getElementById('results-section').classList.add('hidden');
+  renderCurrentStep();
+  window.scrollTo(0, 0);
+}
+
+function resetApp() {
+  selectedCaseId = null; correctVals = null; currentStepIndex = 0; answers = {}; assessments = {}; attempts = {};
+  document.querySelectorAll('.case-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('case-screen').classList.add('hidden');
+  document.getElementById('welcome-screen').classList.remove('hidden');
+  document.getElementById('welcome-error').classList.add('hidden');
+  window.scrollTo(0, 0);
+}
+
+function renderCase(cid) {
+  const c = CASES[cid];
+  document.getElementById('case-badge-display').innerHTML = `<span class="case-badge ${c.badgeClass}">${c.badgeText}</span>`;
+  document.getElementById('case-title').textContent = c.title;
+  const members = getTeamMembers();
+  document.getElementById('case-student-label').textContent = members.length ? 'Equipo: ' + members.join(', ') : '';
+  document.getElementById('case-context').innerHTML = c.context;
+  renderDataTables(c);
+}
+
+function fmt(n) {
+  if (n === null || n === undefined) return '-';
+  return n.toLocaleString('es-CL', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+}
+
+function renderDataTables(c) {
+  const container = document.getElementById('case-data-tables');
+  let html = `
+  <h4 style="margin-bottom:10px; font-size:0.92rem; color:#555">Tabla 1: Proyección de ingresos y costos (MM$)</h4>
+  <div class="table-scroll">
+  <table>
+    <tr><th style="text-align:left">Ítem</th><th>Año 0</th><th>Año 1</th><th>Año 2</th><th>Año 3</th><th>Año 4</th><th>Año 5</th></tr>
+    <tr><td>Inversión inicial</td><td>${fmt(c.initial_investment)}</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Ingresos</td><td>—</td>${[1,2,3,4,5].map(y=>`<td>${fmt(c.revenues[y])}</td>`).join('')}</tr>
+    <tr><td>Costos variables</td><td>—</td>${[1,2,3,4,5].map(y=>`<td>(${fmt(c.var_costs[y])})</td>`).join('')}</tr>
+    <tr><td>Costos fijos</td><td>—</td>${[1,2,3,4,5].map(y=>`<td>(${fmt(c.fixed_costs[y])})</td>`).join('')}</tr>
+    <tr class="total-row"><td>EBIT</td><td>—</td>${[1,2,3,4,5].map(y=>`<td>${fmt(c.revenues[y]-c.var_costs[y]-c.fixed_costs[y])}</td>`).join('')}</tr>
+    <tr><td>Impuesto (${(c.tax_rate*100).toFixed(0)}%)</td><td>—</td>${[1,2,3,4,5].map(y=>{
+      const ebit=c.revenues[y]-c.var_costs[y]-c.fixed_costs[y];
+      return `<td>(${fmt(ebit>0 ? ebit*c.tax_rate : 0)})</td>`;
+    }).join('')}</tr>
+  `;
+  if (c.add_invest.some(v => v !== 0)) {
+    html += `<tr><td>Inversión adicional</td><td>—</td>${[1,2,3,4,5].map(y=>`<td>${c.add_invest[y] !== 0 ? fmt(c.add_invest[y]) : '—'}</td>`).join('')}</tr>`;
+  }
+  if (c.working_cap.some(v => v !== 0)) {
+    html += `<tr><td>Recuperación capital de trabajo</td><td>—</td>${[1,2,3,4,5].map(y=>`<td>${c.working_cap[y] !== 0 ? fmt(c.working_cap[y]) : '—'}</td>`).join('')}</tr>`;
+  }
+  html += `<tr><td>Valor de desecho / terminal</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${fmt(c.terminal_value)}</td></tr></table></div>`;
+
+  html += `
+  <h4 style="margin:20px 0 10px; font-size:0.92rem; color:#555">Tabla 2: Estructura de financiamiento y costo de capital</h4>
+  <div class="table-scroll"><table>
+    <tr><th style="text-align:left">Parámetro</th><th>Valor</th><th>Interpretación</th></tr>
+    <tr><td>Porcentaje de deuda (%D)</td><td>${(c.debt_pct*100).toFixed(0)}%</td><td>Participación de deuda en el financiamiento total</td></tr>
+    <tr><td>Porcentaje de patrimonio (%E)</td><td>${(c.equity_pct*100).toFixed(0)}%</td><td>Participación de capital propio</td></tr>
+    <tr><td>Costo de deuda antes de impuestos (Kd)</td><td>${(c.kd_before_tax*100).toFixed(1)}%</td><td>Tasa anual de la deuda financiera</td></tr>
+    <tr><td>Tasa de impuesto corporativo (T)</td><td>${(c.tax_rate*100).toFixed(0)}%</td><td>Base para calcular el escudo tributario</td></tr>
+    <tr><td>Costo del patrimonio (Ke)</td><td>${(c.ke*100).toFixed(1)}%</td><td>Retorno requerido por inversionistas</td></tr>
+  </table></div>`;
+
+  html += `<h4 style="margin:20px 0 10px; font-size:0.92rem; color:#555">Supuestos clave</h4><ul style="padding-left:20px; font-size:0.86rem; color:#555">`;
+  c.assumptions.forEach(a => { html += `<li style="margin-bottom:4px">${a}</li>`; });
+  html += `</ul>`;
+  container.innerHTML = html;
+}
+
+
+function totalPossibleScore() {
+  return STEPS.reduce((acc, step) => acc + step.pts, 0);
+}
+
+function fmtMetric(n, digits=1) {
+  if (n === null || n === undefined) return 'No recupera en el horizonte';
+  return Number(n).toLocaleString('es-CL', {minimumFractionDigits: digits, maximumFractionDigits: digits});
+}
+
+function renderTokens(txt) {
+  if (!txt) return '';
+  const cv = correctVals || {};
+  return String(txt)
+    .replaceAll('{van}', `MM$ ${fmtMetric(cv.van, 1)}`)
+    .replaceAll('{tir}', `${fmtMetric(cv.tir, 2)}%`)
+    .replaceAll('{wacc}', `${fmtMetric(cv.wacc, 2)}%`)
+    .replaceAll('{payback}', cv.payback === null ? 'No recupera en el horizonte' : `${fmtMetric(cv.payback, 1)} años`);
+}
+
+function metricPanelHTML(title='Indicadores entregados para análisis') {
+  const cv = correctVals;
+  if (!cv) return '';
+  const paybackText = cv.payback === null ? 'No recupera' : `${fmtMetric(cv.payback, 1)} años`;
+  return `<div class="metric-panel">
+    <h4>${title}</h4>
+    <div class="metric-grid">
+      <div class="metric-card"><span class="metric-label">VAN</span><span class="metric-value">MM$ ${fmtMetric(cv.van, 1)}</span></div>
+      <div class="metric-card"><span class="metric-label">TIR</span><span class="metric-value">${fmtMetric(cv.tir, 2)}%</span></div>
+      <div class="metric-card"><span class="metric-label">WACC</span><span class="metric-value">${fmtMetric(cv.wacc, 2)}%</span></div>
+      <div class="metric-card"><span class="metric-label">Payback</span><span class="metric-value">${paybackText}</span></div>
+    </div>
+  </div>`;
+}
+
+function renderCurrentStep() {
+  const step = STEPS[currentStepIndex];
+  const progress = (currentStepIndex / STEPS.length) * 100;
+  const earned = totalScore();
+  const maxPts = totalPossibleScore();
+
+  document.getElementById('progress-label').textContent = `Pregunta ${currentStepIndex + 1} de ${STEPS.length}`;
+  document.getElementById('points-label').textContent = `Puntaje acumulado: ${earned} / ${maxPts}`;
+  document.getElementById('progress-bar').style.width = `${progress}%`;
+  document.getElementById('step-number').textContent = currentStepIndex + 1;
+  document.getElementById('step-title-text').textContent = step.title;
+  document.getElementById('step-purpose').textContent = renderTokens(step.purpose);
+
+  let guideHtml = `<span class="formula">${renderTokens(step.formula || 'Procedimiento cualitativo guiado')}</span><ol>`;
+  step.guide.forEach(g => guideHtml += `<li>${renderTokens(g)}</li>`);
+  guideHtml += '</ol>';
+  document.getElementById('step-guide').innerHTML = guideHtml;
+
+  let businessHtml = '<ul>';
+  step.business.forEach(g => businessHtml += `<li>${renderTokens(g)}</li>`);
+  businessHtml += '</ul>';
+  document.getElementById('step-business').innerHTML = businessHtml;
+
+  document.getElementById('step-feedback').className = 'alert hidden';
+  document.getElementById('step-feedback').innerHTML = '';
+  document.getElementById('btn-next').classList.add('hidden');
+  document.getElementById('btn-skip').classList.add('hidden');
+  document.getElementById('btn-continue-partial').classList.add('hidden');
+  document.getElementById('btn-validate').classList.remove('hidden');
+
+  const metricHtml = step.showMetrics ? metricPanelHTML('Indicadores entregados para análisis y justificación') : '';
+  const promptHtml = step.analysisPrompt ? `<div class="prompt-box">${renderTokens(step.analysisPrompt)}</div>` : '';
+
+  let answerHtml = metricHtml + promptHtml;
+  if (step.type === 'number') {
+    answerHtml += `
+      <label for="current-answer">Tu respuesta (${step.unit})</label>
+      <input type="number" id="current-answer" step="0.01" placeholder="${step.placeholder || ''}">
+      <div class="form-hint">No escribas unidades. Usa punto o coma decimal según tu navegador lo permita.</div>`;
+  } else if (step.type === 'select') {
+    answerHtml += `
+      <label for="current-answer">Selecciona tu decisión</label>
+      <select id="current-answer">
+        <option value="">— Selecciona una opción —</option>
+        <option value="Si">Sí — El proyecto es financieramente viable</option>
+        <option value="No">No — El proyecto no es financieramente viable</option>
+        <option value="Depende">Depende — La viabilidad está condicionada a supuestos adicionales</option>
+      </select>`;
+  } else {
+    answerHtml += `
+      <label for="current-answer">Redacta tu respuesta</label>
+      <textarea id="current-answer" placeholder="${step.placeholder || ''}"></textarea>
+      <div class="form-hint">Usa evidencia financiera y lenguaje empresarial. Evita respuestas de una sola frase.</div>`;
+  }
+  document.getElementById('answer-area').innerHTML = answerHtml;
+
+  if (answers[step.id] !== undefined) {
+    document.getElementById('current-answer').value = answers[step.id];
+  }
+}
+
+function showFeedback(kind, html) {
+  const el = document.getElementById('step-feedback');
+  const cls = kind === 'success' ? 'alert alert-success' : kind === 'partial' ? 'alert alert-warning' : 'alert alert-error';
+  el.className = cls;
+  el.innerHTML = html;
+}
+
+function parseNumberValue(raw) {
+  if (raw === null || raw === undefined) return NaN;
+  return parseFloat(String(raw).replace(',', '.'));
+}
+
+function validateCurrentStep() {
+  const step = STEPS[currentStepIndex];
+  const input = document.getElementById('current-answer');
+  const raw = input.value.trim();
+  if (!raw) {
+    showFeedback('error', 'Completa la respuesta antes de validar.');
+    input.focus();
+    return;
+  }
+  attempts[step.id] = (attempts[step.id] || 0) + 1;
+
+  const result = assessStep(step, raw);
+  answers[step.id] = raw;
+
+  if (result.status === 'correct') {
+    assessments[step.id] = result;
+    showFeedback('success', `<strong>Correcto.</strong> Puedes avanzar. ${result.message}`);
+    document.getElementById('btn-validate').classList.add('hidden');
+    document.getElementById('btn-next').classList.remove('hidden');
+  } else if (result.status === 'partial') {
+    assessments[step.id] = result;
+    showFeedback('partial', `<strong>Respuesta parcialmente correcta.</strong> ${result.message} No se muestra la pauta final. Puedes ajustar tu respuesta o continuar con puntaje parcial.`);
+    document.getElementById('btn-continue-partial').classList.remove('hidden');
+    document.getElementById('btn-next').classList.add('hidden');
+  } else {
+    assessments[step.id] = result;
+    showFeedback('error', `<strong>Valor o argumento incorrecto.</strong> ${result.message} No se entrega la respuesta final. Revisa la guía y vuelve a intentar.`);
+    if ((attempts[step.id] || 0) >= 2) {
+      document.getElementById('btn-skip').classList.remove('hidden');
+    }
+  }
+  document.getElementById('points-label').textContent = `Puntaje acumulado: ${totalScore()} / ${totalPossibleScore()}`;
+}
+
+function assessStep(step, raw) {
+  const cv = correctVals;
+  const c = CASES[selectedCaseId];
+  if (step.type === 'number') {
+    const val = parseNumberValue(raw);
+    if (isNaN(val)) return { status:'wrong', pts:0, message:'La respuesta debe ser numérica.' };
+    const correct = cv[step.id];
+    if (correct === null) return { status:'wrong', pts:0, message:'En este caso no hay recuperación dentro del horizonte. Revisa el flujo acumulado.' };
+
+    const tolRate = 0.5;
+    const tolMoney = Math.abs(correct) * 0.05 + 0.1;
+    let ok = false, partial = false;
+    if (['kd_net','wacc'].includes(step.id)) {
+      ok = Math.abs(val - correct) <= tolRate;
+      partial = Math.abs(val - correct) <= tolRate * 2;
+    } else {
+      ok = Math.abs(val - correct) <= tolMoney;
+      partial = Math.abs(val - correct) <= Math.abs(correct) * 0.10 + 0.1;
+    }
+    if (ok) return { status:'correct', pts:step.pts, message:'El procedimiento y la magnitud son consistentes.' };
+    if (partial) return { status:'partial', pts:Math.round(step.pts * 0.5), message:step.feedback + ' Tu valor está cerca, pero excede la tolerancia de precisión.' };
+    return { status:'wrong', pts:0, message:step.feedback + ' Verifica signos, unidades, periodo y uso de tasas.' };
+  }
+
+  if (step.type === 'select') {
+    const correct = cv.viability;
+    if (raw === correct) return { status:'correct', pts:step.pts, message:'La decisión es coherente con los indicadores del caso.' };
+    if (raw === 'Depende') return { status:'partial', pts:Math.round(step.pts * 0.5), message:'La opción “Depende” puede ser defendible solo si se explican condiciones financieras y riesgos críticos.' };
+    return { status:'wrong', pts:0, message:'La decisión no es coherente con el conjunto de indicadores. Contrasta VAN, TIR, WACC, payback, sensibilidad y riesgo.' };
+  }
+
+  const text = raw.toLowerCase();
+  const keywords = step.eval_keywords || (step.id === 'risk' ? c.risk_keywords : c.justify_keywords);
+  const matches = keywords.filter(k => text.includes(k));
+  const hasBusinessContext = ['mercado','cliente','adopci','capacidad','cost','financ','riesgo','contrato','proveedor','competencia','regulaci','flujo','wacc','van','tir','payback','piloto','hito','sensibilidad'].some(k => text.includes(k));
+  const mentionsMetrics = ['van','tir','wacc','payback'].filter(k => text.includes(k)).length;
+
+  if (step.id === 'justify') {
+    if (mentionsMetrics >= 3 && hasBusinessContext) return { status:'correct', pts:step.pts, message:'La justificación integra VAN, TIR, WACC/payback y contexto empresarial.' };
+    if (mentionsMetrics >= 2 || (mentionsMetrics >= 1 && hasBusinessContext)) return { status:'partial', pts:Math.round(step.pts * 0.5), message:step.feedback + ' Falta integrar todos los indicadores entregados o su implicancia empresarial.' };
+    return { status:'wrong', pts:0, message:step.feedback + ' La justificación debe usar explícitamente los valores entregados.' };
+  }
+
+  if (matches.length >= 3 && hasBusinessContext) return { status:'correct', pts:step.pts, message:'El argumento integra evidencia financiera y contexto empresarial.' };
+  if (matches.length >= 1 || hasBusinessContext) return { status:'partial', pts:Math.round(step.pts * 0.5), message:step.feedback + ' Falta integrar más evidencia financiera o contexto del negocio.' };
+  return { status:'wrong', pts:0, message:step.feedback + ' La respuesta debe explicar el mecanismo financiero y empresarial.' };
+}
+
+function continueAfterPartial() {
+  nextStep();
+}
+
+function skipAfterAttempts() {
+  const step = STEPS[currentStepIndex];
+  if (!assessments[step.id]) {
+    assessments[step.id] = {status:'wrong', pts:0, message:'Avanzó sin resolver correctamente.'};
+  }
+  nextStep();
+}
+
+function nextStep() {
+  if (currentStepIndex < STEPS.length - 1) {
+    currentStepIndex++;
+    renderCurrentStep();
+    document.getElementById('question-card').scrollIntoView({behavior:'smooth'});
+  } else {
+    finishSimulation();
+  }
+}
+
+function totalScore() {
+  return STEPS.reduce((acc, step) => acc + (assessments[step.id]?.pts || 0), 0);
+}
+
+function finishSimulation() {
+  document.getElementById('question-card').classList.add('hidden');
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('results-section').classList.remove('hidden');
+  renderFinalResults();
+  document.getElementById('results-section').scrollIntoView({behavior:'smooth'});
+}
+
+function statusLabel(status) {
+  if (status === 'correct') return 'Correcta';
+  if (status === 'partial') return 'Parcial';
+  return 'Incorrecta';
+}
+
+function renderFinalResults() {
+  const total = totalScore();
+  const members = getTeamMembers();
+  let level = 'Requiere reforzar fundamentos';
+  if (total >= 90) level = 'Excelente dominio';
+  else if (total >= 75) level = 'Buen desempeño';
+  else if (total >= 60) level = 'Desempeño suficiente con aspectos por mejorar';
+
+  document.getElementById('score-box').innerHTML = `
+    <div class="score-number">${total} / ${totalPossibleScore()}</div>
+    <div class="score-label">${level}${members.length ? ' — Equipo: ' + members.map(escapeHtml).join(', ') : ''}</div>
+  `;
+
+  let html = '';
+  STEPS.forEach((step, idx) => {
+    const a = assessments[step.id] || {status:'wrong', pts:0};
+    html += `<div class="summary-item ${a.status}">
+      <strong>${idx + 1}. ${step.title}</strong><br>
+      Estado: ${statusLabel(a.status)}<br>
+      Puntaje: ${a.pts} / ${step.pts}
+    </div>`;
+  });
+  document.getElementById('results-detail').innerHTML = html;
+
+  let reportHtml = `
+    <p class="subtle" style="margin-bottom:12px"><strong>Integrantes:</strong> ${members.length ? members.map(escapeHtml).join(', ') : 'No registrados'}</p>
+    <div class="table-scroll">
+    <table class="report-table">
+      <tr>
+        <th style="width:28%">Pregunta</th>
+        <th style="width:42%">Respuesta entregada</th>
+        <th style="width:15%">Estado</th>
+        <th style="width:15%">Puntaje</th>
+      </tr>`;
+  STEPS.forEach((step, idx) => {
+    const a = assessments[step.id] || {status:'wrong', pts:0};
+    const response = answers[step.id] !== undefined && String(answers[step.id]).trim() !== ''
+      ? escapeHtml(answers[step.id])
+      : '<em>Sin respuesta registrada</em>';
+    reportHtml += `
+      <tr>
+        <td><strong>${idx + 1}. ${escapeHtml(step.title)}</strong></td>
+        <td><div class="answer-text">${response}</div></td>
+        <td>${statusLabel(a.status)}</td>
+        <td class="points">${a.pts} / ${step.pts}</td>
+      </tr>`;
+  });
+  reportHtml += `</table></div>`;
+  document.getElementById('answer-report').innerHTML = reportHtml;
+
+  const missed = STEPS.filter(s => (assessments[s.id]?.status || 'wrong') !== 'correct');
+  let fb = '';
+  if (missed.length === 0) {
+    fb = `<div class="alert alert-success"><strong>Excelente.</strong> Completaste correctamente todos los componentes. La recomendación financiera está bien sustentada.</div>`;
+  } else {
+    fb = `<div class="alert alert-warning"><strong>Aspectos a reforzar:</strong> ${missed.map(s => s.title).join(', ')}.</div>`;
+    fb += `<p class="subtle">Para mejorar, vuelve al caso y revisa especialmente la consistencia entre flujos, tasa de descuento, valor terminal, sensibilidad y decisión empresarial. En las respuestas abiertas, procura explicar cómo VAN, TIR y payback afectan inversión, liquidez, riesgo comercial y capacidad de ejecución.</p>`;
+  }
+  fb = metricPanelHTML('Indicadores utilizados durante el análisis') + fb;
+  document.getElementById('final-feedback').innerHTML = fb;
+}
+</script>
+</body>
+</html>
